@@ -9,9 +9,7 @@
 
 ## b. Live URL
 
-<!-- Replace with your Vercel production URL after deploy -->
-
-**Live app:** [https://YOUR-PROJECT.vercel.app](https://YOUR-PROJECT.vercel.app)
+**Live app:** [https://litmus-ruddy.vercel.app/]((https://litmus-ruddy.vercel.app/))
 
 ## c. Features
 
