@@ -10,25 +10,26 @@
 ## b. Live URL
 
 <!-- Replace with your Vercel production URL after deploy -->
+
 **Live app:** [https://YOUR-PROJECT.vercel.app](https://YOUR-PROJECT.vercel.app)
 
 ## c. Features
 
 - GitHub OAuth sign-in (Auth.js v5)
 - Paste abstract/body text **or** upload a PDF
-- Gemini 2.5 Flash structured critique (JSON)
+- GitHub Models (GPT-4.1-mini) structured critique, OpenRouter free auto-router fallback
 - Relevance score 0–100 with justification
 - Red flags & strengths lists (empty when none found)
 - Verdict: read fully / skim / skip
 - Save triages to Vercel Postgres via Prisma
 - Dashboard sorted by relevance (or newest), filterable by verdict
 - Edit title / research question / source URL; delete a triage
-- Clear errors for unparseable/scanned PDFs, missing input, and Gemini rate limits
+- Clear errors for unparseable/scanned PDFs, missing input, and AI outages
 - Mobile-friendly layout
 
 ## d. The AI feature
 
-Litmus sends the paper title, available text (capped at ~15k characters), and your research question to **Gemini 2.5 Flash** with this system prompt (verbatim):
+Litmus sends the paper title, available text (capped to ~6k input tokens for the free-tier limit), and your research question to **GitHub Models (`openai/gpt-4.1-mini`)**, falling back to **OpenRouter (`openrouter/free`)** if the primary call fails, with this system prompt (verbatim):
 
 ```
 You are a research paper triage assistant. Given a paper's title, abstract,
@@ -56,14 +57,14 @@ Respond with ONLY the JSON object, no markdown fences, no preamble.
 
 **Critique fields explained**
 
-| Field | Meaning |
-| --- | --- |
-| `summary` | Plain-language core claim of the paper |
-| `relevance_score` | 0–100 fit to *your* research question (also stored for sorting) |
-| `relevance_reason` | Short justification for the score |
-| `red_flags` | Specific methodological concerns; may be `[]` |
-| `strengths` | Specific methodological strengths |
-| `verdict` | `read fully`, `skim`, or `skip` |
+| Field              | Meaning                                                         |
+| ------------------ | --------------------------------------------------------------- |
+| `summary`          | Plain-language core claim of the paper                          |
+| `relevance_score`  | 0–100 fit to _your_ research question (also stored for sorting) |
+| `relevance_reason` | Short justification for the score                               |
+| `red_flags`        | Specific methodological concerns; may be `[]`                   |
+| `strengths`        | Specific methodological strengths                               |
+| `verdict`          | `read fully`, `skim`, or `skip`                                 |
 
 Input shape fed to the model: `{title}\n\n{abstract/body}\n\nResearch question: {question}`.
 
@@ -73,7 +74,8 @@ Scanned/image-only PDFs are **not** OCR’d: if text extraction is near-empty, L
 
 - **Next.js 14** (App Router)
 - **Vercel** (hosting)
-- **Gemini 2.5 Flash** via `@google/genai`
+- **GitHub Models** — `openai/gpt-4.1-mini` (primary)
+- **OpenRouter** — `openrouter/free` auto-router (fallback free tier)
 - **Auth.js v5** (NextAuth) — GitHub OAuth only
 - **Prisma** + **Vercel Postgres** (Neon-backed)
 - **pdf-parse** (server-side PDF text)
@@ -106,7 +108,8 @@ npm install
 3. **Env** — copy `.env.example` → `.env.local` and fill:
 
 ```
-GEMINI_API_KEY=
+GITHUB_TOKEN=
+OPENROUTER_API_KEY=
 AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 AUTH_SECRET=
